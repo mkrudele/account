@@ -256,6 +256,61 @@ To search for tags by using the CLI, see [Searching for resources](/docs/account
 
 To search for tags by using the API, see [Searching for resources](/docs/account?topic=account-searching-for-resources#searching-api).
 
+A common use cases is retrieving the tags attached to a resource. There are a couple of options for doing that.  
+The preferred one is the [Search API](/apidocs/doc_search){: external}, as shown
+in the following example.  
+
+```bash
+curl -s -H'Content-type:application/json' -H'Accept:application/json' -H"Authorization:Bearer $IAM_TOKEN" \
+-X POST 'https://api.global-search-tagging.cloud.ibm.com/v3/resources/search' \
+-d'{"query":"crn:\"crn:v1:bluemix:public:codeengine:us-south:a/aabbccddeeff00112233445566778899:aabbccdd-1234-4321-aaaa-001122334455::\"", \
+"fields":["crn","name","tags", "access_tags", "service_tags"]}'
+```
+
+If the resource with the given CRN exists and you can read it, then you should get the following example output, which includes all the tag types
+eventually attached to the resource:  
+
+```JSON
+{
+  "items": [
+    {
+      "name": "my-codeengine-instance",
+      "crn": "crn:v1:bluemix:public:codeengine:us-south:a/aabbccddeeff00112233445566778899:aabbccdd-1234-4321-aaaa-001122334455::", 
+      "tags": ["one", "two"], 
+      "access_tags": ["atag:one", "another-tag:two"], 
+       "service_tags": ["service-tag:one", "service-tag:two"] 
+     }
+  ],
+  "limit": 10,
+  "search_cursor": "..."
+}
+```
+
+You can also use the [Get tags](https://cloud.ibm.com/apidocs/tagging#list-tags) API with the `attached_to` query parameter to obtain the same result.  
+However, that API is strictly rate limited and it does not return all the tag types in a single call as the `/v3/resources/search` does. So, its usage
+is discouraged.  
+
+If you need to accomplish the task using the `ibmcloud` command line, then the `resource search` command is your friend.
+It outputs by default all the tags eventually attached to the resources.  
+The command  
+
+```bash
+ibmcloud resource search name:my-codeengine-instance
+```
+
+will output  
+
+```
+Name:                my-codeengine-instance
+Location:            us-south   
+Family:              resource_controller   
+Resource Type:       resource-instance   
+Resource Group ID:   a58ebff30cab4b30bc67de9fec9cfda5   
+CRN:                 crn:v1:staging:public:codeengine:us-south:a/aa00ffbccdb34a6fbe7a6499ce091aaa:0a01030b-1234-1234-aaaa-002245318e88::
+Tags:                one,two   
+Service Tags:        service-tag:one,service-tag:two
+Access Tags:         atag:one,another-tag:two
+```
 
 ## Tagging for resellers
 {: #resell}
